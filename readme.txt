@@ -65,3 +65,40 @@ public FilterRegistrationBean<UuidLoggingFilter> uuidLoggingFilter() {
     registrationBean.addUrlPatterns("/*");
     return registrationBean;
 }
+
+
+import java.io.IOException;
+import java.util.UUID;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+
+@Component
+public class RequestIdFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        UUID requestId = UUID.randomUUID();
+        httpRequest.setAttribute("requestId", requestId);
+        chain.doFilter(request, response);
+    }
+}
+
+
+@RestController
+public class MyController {
+
+    @RequestMapping("/endpoint")
+    public String handleRequest(HttpServletRequest request) {
+        UUID requestId = (UUID) request.getAttribute("requestId");
+        // Use the request ID as needed
+        ...
+    }
+}
+
