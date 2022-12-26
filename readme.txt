@@ -237,3 +237,26 @@ public class ResponseObject {
     }
 }
 
+
+@ControllerAdvice
+public class ResponseIdAdvice implements ResponseBodyAdvice<Object> {
+
+    @Override
+    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+        return true;
+    }
+
+    @Override
+    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
+            Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
+            ServerHttpResponse response) {
+        HttpServletRequest httpRequest = (HttpServletRequest) request.getNativeRequest();
+        UUID responseId = (UUID) httpRequest.getAttribute("responseId");
+        // Add the response ID to the response body
+        ResponseObject responseObject = new ResponseObject();
+        responseObject.setResponseId(responseId.toString());
+        responseObject.setData(body);
+        return responseObject;
+    }
+}
+
