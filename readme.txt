@@ -102,3 +102,21 @@ public class MyController {
     }
 }
 
+@Service
+public class MyService {
+
+    private final RestTemplate restTemplate;
+
+    public MyService(RestTemplateBuilder restTemplateBuilder) {
+        this.restTemplate = restTemplateBuilder.build();
+    }
+
+    public String getData(String headerValue) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Custom-Header", headerValue);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response = restTemplate.exchange("http://localhost:8000/api/data", HttpMethod.GET, entity, String.class);
+        return response.getBody();
+    }
+}
