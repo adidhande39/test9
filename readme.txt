@@ -1,3 +1,11 @@
+
+SELECT c.name AS COLUMN_NAME, t.name AS TYPE_NAME, c.isnullable AS NULLABLE
+FROM sysobjects o
+JOIN syscolumns c ON o.id = c.id
+JOIN systypes t ON c.xtype = t.xtype
+WHERE o.name = 'employees' AND o.uid = (SELECT uid FROM sysusers WHERE name = 'dbo')
+
+
 @Component
 public class RequestIdFilter extends OncePerRequestFilter {
 
