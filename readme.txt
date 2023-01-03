@@ -34,6 +34,12 @@ public class MyService {
     }
     
     
+    
+SELECT c.name AS COLUMN_NAME, t.name AS TYPE_NAME, c.is_nullable AS NULLABLE
+FROM sys.columns c
+JOIN sys.types t ON c.system_type_id = t.system_type_id
+WHERE c.object_id = OBJECT_ID('company.dbo.employees')
+    
     import java.lang.reflect.Type;
 
 import javax.servlet.http.HttpServletRequest;
