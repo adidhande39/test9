@@ -1,0 +1,25 @@
+import requests
+import time
+
+# Number of concurrent requests
+concurrency = 100
+
+# List of URLs to load test
+urls = [
+    "http://localhost:8080/users",
+    "http://localhost:8080/products",
+    "http://localhost:8080/orders",
+]
+
+# Send the requests
+response_times = []
+for url in urls:
+    start_time = time.time()
+    responses = [requests.get(url) for _ in range(concurrency)]
+    end_time = time.time()
+    response_times.extend([response.elapsed.total_seconds() for response in responses])
+
+# Calculate the average response time
+average_response_time = sum(response_times) / len(response_times)
+
+print(f"Average response time: {average_response_time} seconds")
