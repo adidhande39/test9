@@ -23,3 +23,79 @@ for url in urls:
 average_response_time = sum(response_times) / len(response_times)
 
 print(f"Average response time: {average_response_time} seconds")
+
+
+--------------------------------
+import concurrent.futures
+import requests
+import time
+
+# Set the list of URLs
+url_list = ["http://api.example.com/resource1", "http://api.example.com/resource2", "http://api.example.com/resource3"]
+
+# Set the number of requests to send
+num_requests = 1000
+
+# Set the number of concurrent threads
+num_threads = 100
+
+def send_request(url):
+    # Send a request to the API
+    response = requests.get(url)
+    
+    # Print the status code
+    print(response.status_code)
+
+# Start the load test
+start_time = time.time()
+with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+    for url in url_list:
+        for i in range(num_requests):
+            executor.submit(send_request, url)
+end_time = time.time()
+
+# Calculate the elapsed time
+elapsed_time = end_time - start_time
+
+# Print the results
+print("Sent {} requests in {} seconds".format(num_requests * len(url_list), elapsed_time))
+print("Average rate of {} requests/sec".format((num_requests * len(url_list))/elapsed_time))
+----------------
+import concurrent.futures
+import random
+import requests
+import time
+
+# Set the list of URLs
+url_list = ["http://api.example.com/resource1", "http://api.example.com/resource2", "http://api.example.com/resource3"]
+
+# Set the number of requests to send
+num_requests = 1000
+
+# Set the number of concurrent threads
+num_threads = 100
+
+def send_request():
+    # Pick a random URL from the list
+    url = random.choice(url_list)
+    
+    # Send a request to the API
+    response = requests.get(url)
+    
+    # Print the status code
+    print(response.status_code)
+
+# Start the load test
+start_time = time.time()
+with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+    for i in range(num_requests):
+        executor.submit(send_request)
+end_time = time.time()
+
+# Calculate the elapsed time
+elapsed_time = end_time - start_time
+
+# Print the results
+print("Sent {} requests in {} seconds".format(num_requests, elapsed_time))
+print("Average rate of {} requests/sec".format(num_requests/elapsed_time))
+
