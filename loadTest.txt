@@ -98,4 +98,28 @@ elapsed_time = end_time - start_time
 # Print the results
 print("Sent {} requests in {} seconds".format(num_requests, elapsed_time))
 print("Average rate of {} requests/sec".format(num_requests/elapsed_time))
+-------------------------
+import threading
+import requests
+
+urls = ['http://api.example.com/endpoint1', 'http://api.example.com/endpoint2', 'http://api.example.com/endpoint3']
+
+def send_request(url):
+  # Make a request to the API
+  response = requests.get(url)
+
+  # Check the status code
+  if response.status_code == 200:
+    # Print the response body
+    print(response.text)
+  else:
+    print('Failed to retrieve data from {}'.format(url))
+
+# Loop 500 times
+for _ in range(500):
+  # Create a new thread for each URL
+  for url in urls:
+    t = threading.Thread(target=send_request, args=(url,))
+    t.start()
+    t.join()
 
