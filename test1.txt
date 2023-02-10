@@ -1,0 +1,57 @@
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
+
+@Service
+public class MyService {
+
+    @KafkaListener(topics = "my-topic", groupId = "group_id")
+    public void listenToPartition(ConsumerRecord<String, String> record,
+                                  @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) {
+        // Filter through the messages and print the messages with the ID returned
+        if (record.key().equals(getIdFromResponse())) {
+            System.out.println("Message received from partition " + partition + ": " + record.value());
+        }
+    }
+
+    private String getIdFromResponse() {
+        try {
+            // Send a POST request to "localhost:9000"
+            CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+            HttpPost request = new HttpPost("http://localhost:9000");
+            StringEntity requestParams = new StringEntity("param1=value1&param2=value2");
+            request.addHeader("content-type", "application/x-www-form-urlencoded");
+            request.setEntity(requestParams);
+            HttpResponse response = httpClient.execute(request);
+
+            // Get the ID and Kafka partition from the response
+            String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
+            JsonObject responseJson = new JsonParser().parse(responseString).getAsJsonObject();
+            String id = responseJson.get("id").getAsString();
+            int partition = responseJson.get("partition").getAsInt();
+
+            // Set the partition to listen to
+            ContainerProperties containerProperties = new ContainerProperties("my-topic");
+            containerProperties.setPartition(partition);
+            KafkaMessageListenerContainer<String, String> container = 
+                new KafkaMessageListenerContainer<>(kafkaListenerContainerFactory, containerProperties);
+            container.setupMessageListener(new MessageListener<String, String>() {
+                @Override
+                public void onMessage(ConsumerRecord<String, String> record) {
+                    listenToPartition(record, partition);
+                }
+            });
+            container.start();
+
+            return id;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+}
