@@ -55,3 +55,50 @@ public class MyService {
         }
     }
 }
+
+
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
+
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
+
+@Component
+public class KafkaConsumerExample implements ApplicationRunner {
+
+    private static final String BOOTSTRAP_SERVER = "localhost:9092";
+    private static final String TOPIC_NAME = "my_topic";
+    private static final int PARTITION = 0;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        Properties consumerConfig = new Properties();
+        consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVER);
+        consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "my_group");
+        consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                "org.apache.kafka.common.serialization.StringDeserializer");
+        consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                "org.apache.kafka.common.serialization.StringDeserializer");
+
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerConfig);
+
+        TopicPartition topicPartition = new TopicPartition(TOPIC_NAME, PARTITION);
+        consumer.assign(Collections.singletonList(topicPartition));
+
+        while (true) {
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+            for (ConsumerRecord<String, String> record : records) {
+                System.out.println("Key: " + record.key() + ", Value: " + record.value());
+                System.out.println("Partition: " + record.partition() + ", Offset: " + record.offset());
+            }
+        }
+    }
+}
+
