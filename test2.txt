@@ -1,0 +1,22 @@
+import multiprocessing
+import requests
+
+def send_request(url, data):
+    response = requests.post(url, json=data)
+    print(f"Response from {url}: {response.status_code}")
+
+if __name__ == '__main__':
+    url1 = "https://api.example.com/resource1"
+    data1 = {"key": "value1"}
+
+    url2 = "https://api.example.com/resource2"
+    data2 = {"key": "value2"}
+
+    process1 = multiprocessing.Process(target=send_request, args=(url1, data1))
+    process2 = multiprocessing.Process(target=send_request, args=(url2, data2))
+
+    process1.start()
+    process2.start()
+
+    process1.join()
+    process2.join()
