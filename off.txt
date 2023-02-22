@@ -1,0 +1,34 @@
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.DescribeTopicsResult;
+import org.apache.kafka.clients.admin.TopicDescription;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.config.SaslConfigs;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+
+@Service
+public class KafkaService {
+    
+    private final KafkaAdmin kafkaAdmin;
+
+    public KafkaService(KafkaAdmin kafkaAdmin) {
+        this.kafkaAdmin = kafkaAdmin;
+    }
+
+    public long getCurrentOffsetForPartition(String topic, int partition) throws ExecutionException, InterruptedException {
+        AdminClient adminClient = AdminClient.create(kafkaAdmin.getConfig());
+        Map<TopicPartition, Long> offsets = adminClient.listConsumerGroupOffsets("<your_consumer_group>").partitionsToOffsetAndMetadata().get();
+        TopicDescription topicDescription = adminClient.describeTopics(Collections.singletonList(topic)).all().get().get(topic);
+        long endOffset = topicDescription.partitions().get(partition).partitionSize();
+        long currentOffset = offsets.get(new TopicPartition(topic, partition)).offset();
+        adminClient.close();
+        return endOffset - currentOffset;
+    }
+
+}
